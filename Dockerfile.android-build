@@ -1,0 +1,46 @@
+# Dockerfile for building Android App Bundle
+# This provides a consistent build environment with all dependencies
+
+FROM ubuntu:22.04
+
+# Avoid interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install basic dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    unzip \
+    openjdk-17-jdk \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 20.x
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set Java environment
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV PATH=$PATH:$JAVA_HOME/bin
+
+# Verify installations
+RUN java -version && node --version && npm --version
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files first for better caching
+COPY package*.json ./
+
+# Install npm dependencies
+RUN npm ci
+
+# Copy the rest of the application
+COPY . .
+
+# Make scripts executable
+RUN chmod +x build-android-aab.sh
+
+# Default command
+CMD ["./build-android-aab.sh"]
