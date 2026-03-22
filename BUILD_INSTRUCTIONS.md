@@ -152,15 +152,15 @@ Output: `android/app/build/outputs/bundle/release/app-release.aab`
 - **Package Name**: `ca.foodcheck.app`
 - **Version Name**: `1.0.0`
 - **Version Code**: `1`
-- **Min SDK**: 24 (Android 7.0)
-- **Target SDK**: 36 (Android 14)
-- **Compile SDK**: 36
+- **Min SDK**: 22 (Android 5.1)
+- **Target SDK**: 34 (Android 14)
+- **Compile SDK**: 34
 
 ### Build Configuration
 - **Gradle**: 8.7
-- **Android Gradle Plugin**: 8.3.2
+- **Android Gradle Plugin**: 8.2.1
 - **Java**: 17
-- **Capacitor**: 8.2.0
+- **Capacitor**: 6.1.2
 
 ### Signing Configuration
 Already configured in `android/app/build.gradle`:

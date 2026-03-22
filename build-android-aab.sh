@@ -39,6 +39,7 @@ fi
 JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d'.' -f1)
 if [ "$JAVA_VERSION" -lt 17 ]; then
     echo -e "${RED}Error: Java 17 or higher is required. Current version: $JAVA_VERSION${NC}"
+    echo "Note: The build is configured for Java 17 with Gradle 8.7"
     exit 1
 fi
 echo -e "${GREEN}✓ Java version $JAVA_VERSION detected${NC}"
