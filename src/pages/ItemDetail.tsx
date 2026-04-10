@@ -95,7 +95,9 @@ export default function ItemDetail({ itemId, onBack }: ItemDetailProps) {
             itemName: item.name,
             restaurantName: item.restaurant.name,
             description: item.description,
-            honestPercent: Math.round((item.honest_votes / (item.honest_votes + item.lie_votes)) * 100)
+            honestPercent: (item.honest_votes + item.lie_votes) > 0
+                ? Math.round((item.honest_votes / (item.honest_votes + item.lie_votes)) * 100)
+                : 0
           }),
         }
       );
@@ -143,9 +145,9 @@ export default function ItemDetail({ itemId, onBack }: ItemDetailProps) {
     );
   }
 
-  const featuredPhoto = item.reality_photos.find(p => p.is_featured) || item.reality_photos[0];
+  const latestUpload = uploads[0] ?? null;
   const totalVotes = item.honest_votes + item.lie_votes;
-  const honestPercent = totalVotes > 0 ? Math.round((item.honest_votes / totalVotes) * 100) : 50;
+  const honestPercent = totalVotes > 0 ? Math.round((item.honest_votes / totalVotes) * 100) : 0;
 
   const getVerdictLabel = (percent: number) => {
     if (percent >= 75) return 'Pretty Honest';
@@ -189,45 +191,61 @@ export default function ItemDetail({ itemId, onBack }: ItemDetailProps) {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-2xl font-black text-gray-900 mb-1">
-                Honesty Rating {getScoreEmoji(honestPercent)}
+                Honesty Rating {totalVotes > 0 ? getScoreEmoji(honestPercent) : ''}
               </h2>
-              <p className="text-gray-600">Based on {totalVotes.toLocaleString()} community votes</p>
+              <p className="text-gray-600">
+                {totalVotes > 0
+                  ? `Based on ${totalVotes.toLocaleString()} community votes`
+                  : 'No votes yet — be the first!'}
+              </p>
             </div>
-            <div className={`text-5xl font-black text-white ${getVerdictColor(honestPercent)} rounded-2xl px-6 py-3 shadow-lg`}>
-              {honestPercent}%
-            </div>
+            {totalVotes > 0 ? (
+              <div className={`text-5xl font-black text-white ${getVerdictColor(honestPercent)} rounded-2xl px-6 py-3 shadow-lg`}>
+                {honestPercent}%
+              </div>
+            ) : (
+              <div className="text-base font-bold text-gray-400 bg-gray-100 rounded-2xl px-4 py-3 shadow-lg">
+                No votes
+              </div>
+            )}
           </div>
 
           <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-green-600">✓ Honest ({item.honest_votes})</span>
-              <span className="text-sm font-semibold text-red-600">✗ Lie ({item.lie_votes})</span>
-            </div>
-            <div className="h-3 bg-gray-200 rounded-full overflow-hidden flex">
-              <div
-                className="bg-green-500 transition-all duration-500"
-                style={{ width: `${honestPercent}%` }}
-              />
-              <div
-                className="bg-red-500 transition-all duration-500"
-                style={{ width: `${100 - honestPercent}%` }}
-              />
-            </div>
-            <div className="flex items-center justify-center mt-3">
-              <span className={`text-sm font-bold px-4 py-2 rounded-full border-2 ${
-                honestPercent >= 75 ? 'bg-green-100 text-green-700 border-green-300' :
-                honestPercent >= 50 ? 'bg-yellow-100 text-yellow-700 border-yellow-300' :
-                honestPercent >= 30 ? 'bg-red-100 text-red-700 border-red-300' :
-                'bg-red-200 text-red-900 border-red-400'
-              }`}>
-                Verdict: {getVerdictLabel(honestPercent)}
-              </span>
-            </div>
+            {totalVotes > 0 ? (
+              <>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-semibold text-green-600">✓ Honest ({item.honest_votes})</span>
+                  <span className="text-sm font-semibold text-red-600">✗ Lie ({item.lie_votes})</span>
+                </div>
+                <div className="h-3 bg-gray-200 rounded-full overflow-hidden flex">
+                  <div
+                    className="bg-green-500 transition-all duration-500"
+                    style={{ width: `${honestPercent}%` }}
+                  />
+                  <div
+                    className="bg-red-500 transition-all duration-500"
+                    style={{ width: `${100 - honestPercent}%` }}
+                  />
+                </div>
+                <div className="flex items-center justify-center mt-3">
+                  <span className={`text-sm font-bold px-4 py-2 rounded-full border-2 ${
+                    honestPercent >= 75 ? 'bg-green-100 text-green-700 border-green-300' :
+                    honestPercent >= 50 ? 'bg-yellow-100 text-yellow-700 border-yellow-300' :
+                    honestPercent >= 30 ? 'bg-red-100 text-red-700 border-red-300' :
+                    'bg-red-200 text-red-900 border-red-400'
+                  }`}>
+                    Verdict: {getVerdictLabel(honestPercent)}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="h-3 bg-gray-200 rounded-full overflow-hidden mb-3" />
+            )}
           </div>
 
           <ImageSlider
             adImage={item.official_photo_url}
-            realityImage={featuredPhoto?.photo_url || item.official_photo_url}
+            realityImage={latestUpload?.photo_url ?? null}
             itemName={item.name}
           />
 

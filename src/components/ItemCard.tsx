@@ -13,9 +13,11 @@ export default function ItemCard({ item, onClick, onVoteUpdate }: ItemCardProps)
   const [hasVoted, setHasVoted] = useState(false);
   const [votedType, setVotedType] = useState<string | null>(null);
   const [isCheckingVote, setIsCheckingVote] = useState(true);
+  const [latestUploadUrl, setLatestUploadUrl] = useState<string | null>(null);
 
   useEffect(() => {
     checkExistingVote();
+    fetchLatestUpload();
   }, [item.id]);
 
   const checkExistingVote = async () => {
@@ -32,6 +34,20 @@ export default function ItemCard({ item, onClick, onVoteUpdate }: ItemCardProps)
       setVotedType(data.vote_type);
     }
     setIsCheckingVote(false);
+  };
+
+  const fetchLatestUpload = async () => {
+    const { data } = await supabase
+      .from('uploads')
+      .select('photo_url')
+      .eq('menu_item_id', item.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (data) {
+      setLatestUploadUrl(data.photo_url);
+    }
   };
 
   const totalVotes = item.honest_votes + item.lie_votes;
@@ -90,7 +106,6 @@ export default function ItemCard({ item, onClick, onVoteUpdate }: ItemCardProps)
     return sessionId;
   };
 
-  const featuredPhoto = item.reality_photos.find(p => p.is_featured);
   const isCommunitySubmitted = (item as any).is_community_submitted;
 
   return (
@@ -122,11 +137,19 @@ export default function ItemCard({ item, onClick, onVoteUpdate }: ItemCardProps)
           </div>
 
           <div className="w-1/2 relative">
-            <img
-              src={featuredPhoto?.photo_url || item.official_photo_url}
-              alt={`${item.name} - Real`}
-              className="w-full h-full object-cover"
-            />
+            {latestUploadUrl ? (
+              <img
+                src={latestUploadUrl}
+                alt={`${item.name} - Real`}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-800 flex flex-col items-center justify-center px-3 text-center">
+                <p className="text-white text-xs font-semibold leading-snug">
+                  Be the first to upload a real photo
+                </p>
+              </div>
+            )}
             <div className="absolute top-2 right-2 bg-yellow-500 text-gray-900 text-xs font-bold px-2 py-1 rounded">
               REAL
             </div>
@@ -146,30 +169,35 @@ export default function ItemCard({ item, onClick, onVoteUpdate }: ItemCardProps)
               <span className="text-green-600 font-semibold">✓ Honest</span>
               <span className="text-red-600 font-semibold">✗ Lie</span>
             </div>
-            <div className="h-2 bg-gray-200 rounded-full overflow-hidden flex">
-              <div
-                className="bg-green-500 transition-all duration-500"
-                style={{ width: `${honestPercent}%` }}
-              />
-              <div
-                className="bg-red-500 transition-all duration-500"
-                style={{ width: `${100 - honestPercent}%` }}
-              />
-            </div>
-            <div className="flex items-center justify-between mt-1">
-              {totalVotes > 0 ? (
-                <>
+            {totalVotes > 0 ? (
+              <>
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden flex">
+                  <div
+                    className="bg-green-500 transition-all duration-500"
+                    style={{ width: `${honestPercent}%` }}
+                  />
+                  <div
+                    className="bg-red-500 transition-all duration-500"
+                    style={{ width: `${100 - honestPercent}%` }}
+                  />
+                </div>
+                <div className="flex items-center justify-between mt-1">
                   <span className="text-xs text-gray-500">{honestPercent}%</span>
                   <span className="text-xs text-gray-500">{100 - honestPercent}%</span>
-                </>
-              ) : (
-                <span className="text-xs text-gray-500 w-full text-center">No votes yet</span>
-              )}
-            </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden" />
+                <div className="mt-1">
+                  <span className="text-xs text-gray-400 w-full block text-center">No votes yet</span>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex items-center justify-between mb-3">
-            <span className={`text-xs font-bold px-3 py-1 rounded-full border-2 ${getVerdictColor(honestPercent)}`}>
+            <span className={`text-xs font-bold px-3 py-1 rounded-full border-2 ${totalVotes > 0 ? getVerdictColor(honestPercent) : 'bg-gray-100 text-gray-400 border-gray-200'}`}>
               {totalVotes > 0 ? getVerdictLabel(honestPercent) : 'No votes yet'}
             </span>
             <span className="text-xs text-gray-500">{totalVotes.toLocaleString()} votes</span>
