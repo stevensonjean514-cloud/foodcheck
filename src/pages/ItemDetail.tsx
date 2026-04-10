@@ -116,12 +116,12 @@ export default function ItemDetail({ itemId, onBack }: ItemDetailProps) {
   const handleShareTwitter = () => {
     if (!item) return;
 
-    const totalVotes = item.honest_votes + item.lie_votes;
-    const honestPercent = totalVotes > 0 ? Math.round((item.honest_votes / totalVotes) * 100) : 50;
+    const shareTotalVotes = item.honest_votes + item.lie_votes;
+    const sharePercent = shareTotalVotes > 0 ? Math.round((item.honest_votes / shareTotalVotes) * 100) : null;
 
-    const verdict = honestPercent >= 75 ? '👍' : honestPercent >= 50 ? '🤷' : honestPercent >= 30 ? '😱' : '🚨💀';
-
-    const tweetText = `${item.restaurant.name}'s ${item.name} is only ${honestPercent}% honest according to FoodCheck ${verdict} Check it out: ${window.location.href} #FoodCheck #AdVsReality`;
+    const tweetText = sharePercent !== null
+      ? `${item.restaurant.name}'s ${item.name} is only ${sharePercent}% honest according to FoodCheck. Check it out: ${window.location.href} #FoodCheck #AdVsReality`
+      : `Is ${item.restaurant.name}'s ${item.name} as advertised? Check it out on FoodCheck: ${window.location.href} #FoodCheck #AdVsReality`;
 
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
     window.open(twitterUrl, '_blank', 'width=550,height=420');

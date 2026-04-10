@@ -101,8 +101,8 @@ export default function Home({ onItemClick, onRestaurantClick }: HomeProps) {
     .sort((a, b) => {
       const totalVotesA = a.honest_votes + a.lie_votes;
       const totalVotesB = b.honest_votes + b.lie_votes;
-      const honestPercentA = totalVotesA > 0 ? (a.honest_votes / totalVotesA) * 100 : 50;
-      const honestPercentB = totalVotesB > 0 ? (b.honest_votes / totalVotesB) * 100 : 50;
+      const honestPercentA = totalVotesA > 0 ? (a.honest_votes / totalVotesA) * 100 : -1;
+      const honestPercentB = totalVotesB > 0 ? (b.honest_votes / totalVotesB) * 100 : -1;
 
       if (sortBy === 'votes') {
         return totalVotesB - totalVotesA;

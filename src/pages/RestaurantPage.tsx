@@ -57,13 +57,13 @@ export default function RestaurantPage({ slug, onBack, onItemClick }: Restaurant
     );
   }
 
-  const avgScore = items.length > 0
-    ? Math.round(items.reduce((acc, item) => {
+  const votedItems = items.filter(item => (item.honest_votes + item.lie_votes) > 0);
+  const avgScore = votedItems.length > 0
+    ? Math.round(votedItems.reduce((acc, item) => {
         const total = item.honest_votes + item.lie_votes;
-        const percent = total > 0 ? (item.honest_votes / total) * 100 : 50;
-        return acc + percent;
-      }, 0) / items.length)
-    : 0;
+        return acc + (item.honest_votes / total) * 100;
+      }, 0) / votedItems.length)
+    : null;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 pb-20">
@@ -86,7 +86,11 @@ export default function RestaurantPage({ slug, onBack, onItemClick }: Restaurant
               <p className="text-red-100 text-lg">{restaurant.description}</p>
             </div>
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-4 text-center">
-              <div className="text-4xl font-black">{avgScore}%</div>
+              {avgScore !== null ? (
+                <div className="text-4xl font-black">{avgScore}%</div>
+              ) : (
+                <div className="text-xl font-bold">No votes</div>
+              )}
               <div className="text-sm text-red-100 mt-1">Avg Score</div>
             </div>
           </div>
